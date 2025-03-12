@@ -1,26 +1,35 @@
+#include "./include/LinAlg.hpp"
 #include<fstream>
 #include<iostream>
 #include<cmath>
 
-struct Vec3{
-    double x, y, z;
-    Vec3(){x=y=z=0;}
-    Vec3(double x_, double y_, double z_) {x = x_; y = y_; z = z_;}
-    Vec3 operator + (const Vec3 b){return Vec3(x+b.x, y+b.y, z+b.z);}
-    Vec3 operator - (const Vec3 b){return Vec3(x-b.x, y-b.y, z-b.z);}
-    Vec3 operator * (double c){return Vec3(c*x, x*y, c*z);}
-    Vec3 operator / (double c){return Vec3(x/c, y/c, z/c);}
-    Vec3 operator = (const Vec3 b){return Vec3(b.x, b.y, b.z);}
-    double dot(const Vec3 b){return (x*b.x + y*b.y + z*b.z);}
-    double norm(){return pow((x*x + y*y + z*z), 0.5);}
-};
+// struct Vec3{
+//     double x, y, z;
+//     Vec3(){x=y=z=0;}
+//     Vec3(double x_, double y_, double z_) {x = x_; y = y_; z = z_;}
+//     Vec3 operator + (const Vec3 b){return Vec3(x+b.x, y+b.y, z+b.z);}
+//     Vec3 operator - (const Vec3 b){return Vec3(x-b.x, y-b.y, z-b.z);}
+//     Vec3 operator * (double c){return Vec3(c*x, x*y, c*z);}
+//     Vec3 operator / (double c){return Vec3(x/c, y/c, z/c);}
+//     // Vec3 operator = (const Vec3 b){return Vec3(b.x, b.y, b.z);}
+//     double dot(const Vec3 b){return (x*b.x + y*b.y + z*b.z);}
+//     double norm(){return pow((x*x + y*y + z*z), 0.5);}
+// };
 
-struct Ray{
-    Vec3 o;
-    Vec3 d;
-    Ray(Vec3& org, Vec3& dir){
-        o = org;
-        d = dir;
+// struct Ray{
+//     Vec3 o;
+//     Vec3 d;
+//     Ray(Vec3& org, Vec3& dir){
+//         o = org;
+//         d = dir;
+//     }
+// };
+
+struct Info{
+    Vec3 pt;
+    double lambda;
+    Info(){
+        lambda = 0;
     }
 };
 
@@ -31,16 +40,24 @@ struct Sphere{
         r = radius;
         c = center;
     }
-    bool intersect(Ray& ray){
+    bool intersect(Ray ray, Info* intersect){
+        LinAlg solver;
+
         Vec3 o = ray.o, d = ray.d;
         Vec3 oc = (o - c);
         
-        double b = 2 * oc.dot(d);
-        double a = pow(d.norm(), 2);
-        double c = pow(oc.norm(), 2) - r*r;
+        double b = 2 * solver.dot(oc, d);
+        double a = pow(solver.norm(d), 2);
+        double c = pow(solver.norm(oc), 2) - r*r;
 
         double disc = b*b - 4*a*c;
         if(disc< 0) return false;
+
+        double t0 = -(b / 2) + 0.5 * pow(disc, 0.5);
+        double t1 = -(b / 2) - 0.5 * pow(disc, 0.5);
+        double lambda = (t0<t1)?t0:t1;
+        intersect->lambda = lambda;
+        intersect->pt = (o + (d * lambda));
         return true;
     }
 };
@@ -63,8 +80,11 @@ int main(){
     Color green(0, 255, 0);
     Color blue(0, 0, 255);
 
-    Vec3 center(W/2, H/2, 50);
-    Sphere sphere(center, 20);
+    LinAlg solver;
+
+    Vec3 center(W/2, H/2, 50), lgt_src_cen(50, 50, 60);
+    Sphere sphere(center, 60);
+    Sphere light_src(lgt_src_cen, 40);
 
     for(int y = 0; y< H; y++){
         for(int x = 0; x< W; x++){
@@ -72,12 +92,27 @@ int main(){
             Vec3 dir(0, 0, 1);
             Ray ray(org, dir);
 
-            if(sphere.intersect(ray)){
-                std::cout << "(" << y << ", " << x << ") ray intersect\n";  
+            Info intersect;
+            if(sphere.intersect(ray, &intersect)){  
+                Vec3 refl = solver.reflect(dir, center);
+                Ray reflected(intersect.pt, refl);
 
+                if(light_src.intersect(reflected, &intersect)){
+                    pixel_col[y][x].r = 255;
+                    pixel_col[y][x].g = 255;
+                    pixel_col[y][x].b = 255;
+                }
+
+                pixel_col[y][x].r = (pixel_col[y][x].r + 255) / 2.0;
+                // pixel_col[y][x].g = 0;
+                // pixel_col[y][x].b = 0;
+                
+            }
+
+            if(light_src.intersect(ray, &intersect)){
                 pixel_col[y][x].r = 255;
-                pixel_col[y][x].g = 0;
-                pixel_col[y][x].b = 0;
+                pixel_col[y][x].g = 255;
+                pixel_col[y][x].b = 255;
             }
 
             out << pixel_col[y][x].r << "\n";
