@@ -2,6 +2,7 @@
 #define RAYLIB_HPP
 
 #include <cmath>
+#include <iostream>
 
 struct Vec3{
     double x, y, z;
@@ -22,5 +23,9 @@ struct Ray{
         d = dir;
     }
 };
+
+void print(Vec3& v){
+    std::cout << v.x << " " << v.y << " " << v.z << "\n";
+}
 
 #endif

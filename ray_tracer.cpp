@@ -82,7 +82,7 @@ int main(){
 
     LinAlg solver;
 
-    Vec3 center(W/2, H/2, 50), lgt_src_cen(50, 50, 60);
+    Vec3 center(W/2, H/2, 150), lgt_src_cen(75, 100, 50);
     Sphere sphere(center, 60);
     Sphere light_src(lgt_src_cen, 40);
 
@@ -93,20 +93,20 @@ int main(){
             Ray ray(org, dir);
 
             Info intersect;
-            if(sphere.intersect(ray, &intersect)){  
-                Vec3 refl = solver.reflect(dir, center);
+            if(sphere.intersect(ray, &intersect)){ 
+                print(intersect.pt);
+                Vec3 normal = (intersect.pt - center); 
+                Vec3 refl = solver.reflect(dir, normal);
                 Ray reflected(intersect.pt, refl);
 
-                if(light_src.intersect(reflected, &intersect)){
-                    pixel_col[y][x].r = 255;
-                    pixel_col[y][x].g = 255;
-                    pixel_col[y][x].b = 255;
-                }
+                pixel_col[y][x] = red;
 
-                pixel_col[y][x].r = (pixel_col[y][x].r + 255) / 2.0;
-                // pixel_col[y][x].g = 0;
-                // pixel_col[y][x].b = 0;
-                
+                if(light_src.intersect(reflected, &intersect)){
+                    std::cout << "Intersect\n";
+                    pixel_col[y][x].r = (pixel_col[y][x].r + 255) / 2.0;
+                    pixel_col[y][x].g = (pixel_col[y][x].g + 255) / 2.0;
+                    pixel_col[y][x].b = (pixel_col[y][x].b + 255) / 2.0;
+                }
             }
 
             if(light_src.intersect(ray, &intersect)){

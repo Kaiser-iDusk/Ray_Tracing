@@ -10,17 +10,13 @@ public:
         return res;
     }
     Vec3 proj(Vec3 u, Vec3 normal){
-        Vec3 perp_dir, unit_perp;
-        perp_dir = cross(normal, cross(u, normal));
-        unit_perp = (perp_dir / norm(perp_dir));
-        double mag = norm(perp_dir) * pow(1 - pow(dot(normal / norm(normal), u / norm(u)), 2), 0.5);
-        Vec3 perp = (unit_perp * mag);
-        return (u - perp);
+        Vec3 unit_normal = normal / norm(normal);
+        Vec3 proj = cross(unit_normal, cross(u, unit_normal));
+        return proj;
     }
     Vec3 reflect(Vec3 a, Vec3 normal){
         Vec3 project = proj(a, normal);
-        Vec3 temp = (project - a);
-        Vec3 res = (a + (temp * 2));
+        Vec3 res = (project*2) - a;
         return res;
     }
     double dot(const Vec3 a, const Vec3 b){return (a.x*b.x + a.y*b.y + a.z*b.z);}
