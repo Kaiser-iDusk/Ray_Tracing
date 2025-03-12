@@ -4,4 +4,5 @@
 <p>This is a very basic engine but currently working on shaders implementation.</p>
 <p>Thanks for reading till here!</p>
 
-![Output](images/out.jpeg)
+![Output](images/out.jpeg?raw=true)
+<p>Bling-Phongg shader model of iteration 1</p>
