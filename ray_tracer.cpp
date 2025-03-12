@@ -68,7 +68,7 @@ struct Color{
 int main(){
     int W = WIDTH, H = HEIGHT;
 
-    std::ofstream out("out.ppm");
+    std::ofstream out("images/out.ppm");
     out << "P3\n" << W << "\n" << H << "\n" << "255\n";
 
     Color pixel_col[H][W];
