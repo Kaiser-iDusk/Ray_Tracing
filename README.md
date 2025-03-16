@@ -5,4 +5,7 @@
 <p>Thanks for reading till here!</p>
 
 ![Output](images/out.jpeg?raw=true)
-<p>Bling-Phongg shader model of iteration 1</p>
+<p>Bling-Phongg shader model of single sphere</p>
+
+![Output](images/out2.jpeg?raw=true)
+<p>Bling-Phongg shader model of 3 spheres.</p>

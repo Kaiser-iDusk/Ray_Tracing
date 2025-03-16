@@ -3,7 +3,6 @@
 #include<iostream>
 #include<cmath>
 
-
 #define WIDTH 600
 #define HEIGHT 512
 #define K_A 0.2
@@ -22,6 +21,7 @@ struct Info{
 struct Sphere{
     double r;
     Vec3 c;
+    Sphere(){r = 0;}
     Sphere(Vec3& center, double radius){
         r = radius;
         c = center;
@@ -80,8 +80,18 @@ int main(){
 
     LinAlg solver;
 
-    Vec3 center(W/2, H/2, 150), lgt_src_cen(W/2, 0, 50);
-    Sphere sphere(center, 100);
+    Vec3 centers[3], lgt_src_cen(W/2, 0, 50);
+    centers[0] = (Vec3) {W/4, H/2, 150};
+    centers[1] = (Vec3) {W/2, H/2, 150};
+    centers[2] = (Vec3) {3*W/4, H/2, 150};
+    
+    Sphere spheres[3];
+    spheres[0] = (Sphere){centers[0], 50};
+    spheres[1] = (Sphere){centers[1], 50};
+    spheres[2] = (Sphere){centers[2], 50};
+
+    Color colors[3] = {red, green, blue};
+
     Sphere light_src(lgt_src_cen, 1);
 
     for(int y = 0; y< H; y++){
@@ -90,27 +100,30 @@ int main(){
             Vec3 dir(0, 0, 1);
             Ray ray(org, dir);
 
-            Info intersect;
-            if(sphere.intersect(ray, &intersect)){ 
-                Vec3 l_dir = (light_src.c - intersect.pt);
-                Vec3 normal = (intersect.pt - center);
-                Vec3 view_dir = dir * (-1.0);
+            for(int k = 0; k< 3; k++){
+                Info intersect;
+                if(spheres[k].intersect(ray, &intersect)){ 
+                    Vec3 l_dir = (light_src.c - intersect.pt);
+                    Vec3 normal = (intersect.pt - centers[k]);
+                    Vec3 view_dir = dir * (-1.0);
 
-                pixel_col[y][x] = red;
+                    pixel_col[y][x] = colors[k];
 
-                // Bling-Phonng shading
-                Vec3 bisector = (view_dir + l_dir);
-                Vec3 h_dir = bisector / solver.norm(bisector);
+                    // Bling-Phonng shading
+                    Vec3 bisector = (view_dir + l_dir);
+                    Vec3 h_dir = bisector / solver.norm(bisector);
 
-                double nl = solver.dot((normal / solver.norm(normal)), (l_dir / solver.norm(l_dir)));
-                double nh = solver.dot((normal / solver.norm(normal)), h_dir);
-                
-                double dt1 = std::max(0.0, nl), dt2 = pow(std::max(0.0, nh), BP_P); 
+                    double nl = solver.dot((normal / solver.norm(normal)), (l_dir / solver.norm(l_dir)));
+                    double nh = solver.dot((normal / solver.norm(normal)), h_dir);
+                    
+                    double dt1 = std::max(0.0, nl), dt2 = pow(std::max(0.0, nh), BP_P); 
 
-                pixel_col[y][x] = Color::clamp(red + (dark_gray * K_A) + (white * (K_D * dt1 + K_S * dt2)));
+                    pixel_col[y][x] = Color::clamp(colors[k] + (dark_gray * K_A) + (white * (K_D * dt1 + K_S * dt2)));
+                }
             }
 
-            if(light_src.intersect(ray, &intersect)){
+            Info dummy_intersect;
+            if(light_src.intersect(ray, &dummy_intersect)){
                 pixel_col[y][x].r = 255;
                 pixel_col[y][x].g = 255;
                 pixel_col[y][x].b = 255;
